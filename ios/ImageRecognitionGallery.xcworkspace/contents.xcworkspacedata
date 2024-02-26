@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:ImageRecognitionGallery.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Bindings.h">
+   </FileRef>
+   <FileRef
+      location = "group:Bindings.m">
+   </FileRef>
+   <FileRef
+      location = "group:ImageRecognitionGallery">
+   </FileRef>
+   <FileRef
+      location = "group:ImageRecognitionGalleryTests">
+   </FileRef>
+   <FileRef
+      location = "group:Podfile">
+   </FileRef>
+   <FileRef
+      location = "group:Podfile.lock">
+   </FileRef>
+   <FileRef
+      location = "group:Pods">
+   </FileRef>
+   <FileRef
+      location = "group:Pods/Pods.xcodeproj">
+   </FileRef>
+</Workspace>
