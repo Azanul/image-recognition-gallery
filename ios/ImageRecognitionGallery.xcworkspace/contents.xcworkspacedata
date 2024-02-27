@@ -8,9 +8,6 @@
       location = "group:Bindings.h">
    </FileRef>
    <FileRef
-      location = "group:Bindings.m">
-   </FileRef>
-   <FileRef
       location = "group:ImageRecognitionGallery">
    </FileRef>
    <FileRef

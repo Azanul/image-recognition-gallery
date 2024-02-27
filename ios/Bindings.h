@@ -5,19 +5,12 @@
 //  Created by Azanul Haque on 26/02/24.
 //
 
-#import <Foundation/Foundation.h>
-#import <React/RCTLog.h>
-#import "Bindings.h"
-#import "libimage_processing.h"
+#ifndef Bindings_h
+#define Bindings_h
 
-@implementation Bindings
+#import <React/RCTBridgeModule.h>
 
-RCT_EXPORT_MODULE ()
-
-RCT_EXPORT_METHOD (init: (NSString *)apiKey) {
-  RCT LogInfo(@"Received apiKey %@, calling rust next", apikey);
-  const char *myRustStr = hello_world();
-  NSString *myObjCStr = [NSString stringWithUTF8String: myRustStr];
-  RCT LogInfo(@"Received string from rust %@", myObjCStr);
-}
+@interface Bindings : NSObject <RCTBridgeModule>
 @end
+
+#endif
