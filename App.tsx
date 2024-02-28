@@ -18,7 +18,7 @@ function App(): React.JSX.Element {
   };
 
   useEffect(() => {
-    Bindings.init('ThisIsAnApiKey');
+    Bindings.init('/storage/emulated/0/DCIM');
   }, []);
 
   return (
