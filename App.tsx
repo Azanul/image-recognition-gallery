@@ -18,7 +18,7 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  async function x() {
+  async function requestPermissions() {
     try {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
@@ -42,7 +42,7 @@ function App(): React.JSX.Element {
   }
   
   useEffect(() => {
-    x();
+    requestPermissions();
     Bindings.list('/storage/emulated/0');
     // Bindings.list('/storage/emulated/0/DCIM');
   }, []);
