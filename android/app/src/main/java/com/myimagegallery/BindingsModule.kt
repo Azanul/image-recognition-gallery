@@ -26,5 +26,13 @@ class BindingsModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
         RNLog.w(this.reactApplicationContext, "Rust says: $result")
     }
 
+    @ReactMethod
+    fun list(folderPath: String) {
+        RNLog.w(this.reactApplicationContext, "BindingsModule.listImages() called with folderPath: $folderPath")
+        val result = listImages(folderPath)
+        RNLog.w(this.reactApplicationContext, "Rust says: $result")
+    }
+
     private external fun helloWorld(): String
+    private external fun listImages(path: String): String
 }
