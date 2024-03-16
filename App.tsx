@@ -23,19 +23,18 @@ function App(): React.JSX.Element {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
         {
-          title: 'Cool Photo App Camera Permission',
+          title: 'Read Images Permission',
           message:
-            'Cool Photo App needs access to your camera ' +
-            'so you can take awesome pictures.',
+            'Image Recognition Gallery needs permission to read images',
           buttonNeutral: 'Ask Me Later',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
         },
       );
       if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('You can use the camera');
+        console.log('Permission granted');
       } else {
-        console.log('Camera permission denied: ' + granted);
+        console.log('Image permission denied: ' + granted);
       }
     } catch (err) {
       console.warn(err);
