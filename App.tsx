@@ -7,12 +7,15 @@ import {
   Text,
   View,
   Image,
+  FlatList,
+  ListRenderItem,
 } from 'react-native';
 import { NativeModules } from 'react-native';
 
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 
-interface icon {
+interface entry {
+  id: number,
   type: string;
   data: string;
 }
@@ -49,7 +52,7 @@ function App(): React.JSX.Element {
     }
   }
 
-  const [data, setData] = useState<icon[]>([]);
+  const [data, setData] = useState<entry[]>([]);
 
   useEffect(() => {
     requestPermissions();
@@ -58,25 +61,32 @@ function App(): React.JSX.Element {
     // Bindings.list('/storage/emulated/0/DCIM');
   }, []);
 
+  const renderItem: ListRenderItem<entry> = ({ item }: { item: entry }) => (
+    <>
+      {
+        item.type != "folder" &&
+        <Image
+          source={{ uri: `data:image/${item.type};base64,${item.data}` }}
+          style={{ width: 100, height: 100 }}
+        />
+      }
+      {
+        item.type == "folder" &&
+        <Text>Data: {item.data}</Text>
+      }
+    </>
+  );
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      {data.map((object, index) => (
-        <View key={index}>
-          <Text>Type: {object.type}</Text>
-          {object.type == "image" &&
-            <Image
-            source={{ uri: `data:image/png;base64,${object.data}` }}
-            style={{ width: 100, height: 100 }}
-          />}
-          {object.type == "folder" &&
-            <Text>Data: {object.data}</Text>}
-        </View>
-      ))}
-
+      <FlatList
+        data={data}
+        renderItem={renderItem}
+      />
     </SafeAreaView>
   );
 }

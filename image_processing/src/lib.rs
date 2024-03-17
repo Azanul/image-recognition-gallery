@@ -61,17 +61,17 @@ pub mod android {
                                     || ext.eq_ignore_ascii_case("jpg")
                                     || ext.eq_ignore_ascii_case("jpeg")
                                 {
+                                    let image_format =
+                                        image::ImageFormat::from_extension(ext).unwrap();
                                     let img = ImageReader::open(&path).unwrap().decode().unwrap();
                                     let mut image_data: Vec<u8> = Vec::new();
-                                    img.thumbnail(100, 100).write_to(
-                                        &mut Cursor::new(&mut image_data),
-                                        image::ImageFormat::Png,
-                                    )
-                                    .unwrap();
+                                    img.thumbnail(100, 100)
+                                        .write_to(&mut Cursor::new(&mut image_data), image_format)
+                                        .unwrap();
                                     return Some(format!(
-                                        "{{\"type\":\"image\",\"data\":\"{}\"}}",
-                                        general_purpose::STANDARD
-                                            .encode(image_data)
+                                        "{{\"type\":\"{}\",\"data\":\"{}\"}}",
+                                        ext.to_lowercase().as_str(),
+                                        general_purpose::STANDARD.encode(image_data)
                                     ));
                                 }
                             }
