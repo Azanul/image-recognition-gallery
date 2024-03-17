@@ -1,13 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   StatusBar,
   useColorScheme,
   PermissionsAndroid,
+  Text,
+  View,
+  Image,
 } from 'react-native';
 import { NativeModules } from 'react-native';
 
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
+
+interface icon {
+  type: string;
+  data: string;
+}
 
 const Bindings = NativeModules.Bindings;
 
@@ -40,10 +48,13 @@ function App(): React.JSX.Element {
       console.warn(err);
     }
   }
-  
+
+  const [data, setData] = useState<icon[]>([]);
+
   useEffect(() => {
     requestPermissions();
-    Bindings.list('/storage/emulated/0');
+    let jsonString: string = Bindings.list('/storage/emulated/0');
+    setData(JSON.parse(jsonString));
     // Bindings.list('/storage/emulated/0/DCIM');
   }, []);
 
@@ -53,6 +64,18 @@ function App(): React.JSX.Element {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
+      {data.map((object, index) => (
+        <View key={index}>
+          <Text>Type: {object.type}</Text>
+          {object.type == "image" &&
+            <Image
+            source={{ uri: `data:image/png;base64,${object.data}` }}
+            style={{ width: 100, height: 100 }}
+          />}
+          {object.type == "folder" &&
+            <Text>Data: {object.data}</Text>}
+        </View>
+      ))}
 
     </SafeAreaView>
   );

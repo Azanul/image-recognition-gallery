@@ -10,7 +10,11 @@ pub unsafe extern "C" fn hello_world() -> *const c_char {
 pub mod android {
     extern crate jni;
 
-    use std::fs;
+    use base64::engine::general_purpose;
+    use base64::Engine;
+    use image::io::Reader as ImageReader;
+    use std::fs::{self};
+    use std::io::Cursor;
 
     use self::jni::objects::{JClass, JString};
     use self::jni::sys::jstring;
@@ -25,10 +29,14 @@ pub mod android {
             .new_string("Hello from Rust!")
             .expect("Couldn't create java string!");
         **output
-    }    
+    }
 
     #[no_mangle]
-    pub unsafe extern "C" fn Java_com_myimagegallery_BindingsModule_listImages(mut env: JNIEnv, _: JClass, folder_path: JString) -> jstring {
+    pub unsafe extern "C" fn Java_com_myimagegallery_BindingsModule_listImages(
+        mut env: JNIEnv,
+        _: JClass,
+        folder_path: JString,
+    ) -> jstring {
         // Convert jstring to Rust String
         let folder_path = env.get_string(&folder_path);
         let binding = env.new_string("").expect("Couldn't create java string!");
@@ -40,32 +48,51 @@ pub mod android {
         // Convert JString to Rust String
         let folder_path: String = folder_path.to_string_lossy().into_owned();
 
-        // Get a list of files in the folder
-        let files = fs::read_dir(&folder_path)
-            .expect("Unable to read directory")
-            .map(|entry| entry.expect("Error reading entry").path())
-            .filter(|path| path.is_file())
-            .filter(|path| {
-                if let Some(extension) = path.extension() {
-                    if let Some(ext) = extension.to_str() {
-                        ext.eq_ignore_ascii_case("png") || ext.eq_ignore_ascii_case("jpg") || ext.eq_ignore_ascii_case("jpeg") || ext.eq_ignore_ascii_case("svg")
+        // Get a list of files & folders in the folder
+        let fnfs = fs::read_dir(folder_path)
+            .unwrap()
+            .filter_map(|entry| {
+                entry.ok().and_then(|e| {
+                    let path = e.path();
+                    if path.is_file() {
+                        if let Some(extension) = path.extension() {
+                            if let Some(ext) = extension.to_str() {
+                                if ext.eq_ignore_ascii_case("png")
+                                    || ext.eq_ignore_ascii_case("jpg")
+                                    || ext.eq_ignore_ascii_case("jpeg")
+                                {
+                                    let img = ImageReader::open(&path).unwrap().decode().unwrap();
+                                    let mut image_data: Vec<u8> = Vec::new();
+                                    img.thumbnail(100, 100).write_to(
+                                        &mut Cursor::new(&mut image_data),
+                                        image::ImageFormat::Png,
+                                    )
+                                    .unwrap();
+                                    return Some(format!(
+                                        "{{\"type\":\"image\",\"data\":\"{}\"}}",
+                                        general_purpose::STANDARD
+                                            .encode(image_data)
+                                    ));
+                                }
+                            }
+                        }
                     } else {
-                        false
+                        return Some(format!(
+                            "{{\"type\":\"folder\",\"data\":\"{}\"}}",
+                            path.display()
+                        ));
                     }
-                } else {
-                    false
-                }
+                    None
+                })
             })
             .collect::<Vec<_>>();
-        
 
-        // Convert list of file paths to a single string
-        let result = files.iter()
-            .map(|path| path.to_str().unwrap_or_default())
-            .collect::<Vec<_>>()
-            .join("\n");
+        // Construct the JSON array
+        let json_result = format!("[{}]", fnfs.join(","));
 
-        let output: JString = env.new_string(&result).expect("Couldn't create java string!");
+        let output: JString = env
+            .new_string(&json_result)
+            .expect("Couldn't create java string!");
         **output
     }
 }
