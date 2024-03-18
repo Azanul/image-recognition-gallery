@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { item, ItemComponent } from "../components/Item";
 import { FlatList, ListRenderItem, PermissionsAndroid } from "react-native";
 import { openFolder } from "../util/native";
+import { rootDir } from "../util/constants";
 
 async function requestPermissions() {
     try {
@@ -26,15 +27,14 @@ async function requestPermissions() {
     }
 }
 
-export const HomeScreen = () => {
+export const HomeScreen = ({ navigation } : { navigation : any }) => {
     const [list, setList] = useState<item[]>([]);
 
-    const renderItem: ListRenderItem<item> = ({ item }: { item: item }) => <ItemComponent item={item} setList={setList} />;
+    const renderItem: ListRenderItem<item> = ({ item }: { item: item }) => <ItemComponent item={item} setList={setList} navigation={navigation} />;
 
     useEffect(() => {
         requestPermissions();
-        console.log(openFolder('/storage/emulated/0'));
-        setList(openFolder('/storage/emulated/0'));
+        setList(openFolder(rootDir));
     }, []);
 
     return (

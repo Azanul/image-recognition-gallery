@@ -20,22 +20,22 @@ function App(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor} />
-        <HomeScreen/>
-      {/* <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen
-            name="Home"
-            component={HomeScreen}
-            options={{ title: '/' }}
-          />
-          { <Stack.Screen name="Image" component={ImageScreen} /> }
-        </Stack.Navigator>
-      </NavigationContainer> */}
-    </SafeAreaView>
+
+    <NavigationContainer>
+      <SafeAreaView style={backgroundStyle}>
+        <StatusBar
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={backgroundStyle.backgroundColor} />
+      </SafeAreaView>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{ title: '/' }}
+        />
+        {/* <Stack.Screen name="Image" component={ImageScreen} /> */}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
