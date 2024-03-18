@@ -11,7 +11,7 @@ export const ItemComponent = ({ item, navigation, crrDirPath }: { item: item, na
     return <>
         {
             item.type != "folder" &&
-            <ImageComponent item={item} navigation={navigation} />
+            <ImageComponent fileName={item.path.slice(crrDirPath.length + 1)} item={item} navigation={navigation} />
         }
         {
             item.type == "folder" &&
@@ -20,17 +20,20 @@ export const ItemComponent = ({ item, navigation, crrDirPath }: { item: item, na
     </>
 }
 
-const ImageComponent = ({ item, navigation }: { item: item, navigation: any }) => {
+const ImageComponent = ({ fileName, item, navigation }: { fileName: string, item: item, navigation: any }) => {
     return <Pressable
         onPress={() =>
-            navigation.navigate('Image', { path: item.path })
+            navigation.navigate('Image', { fileName: fileName, path: item.path })
         }
         accessibilityLabel="Open image"
     >
-        <Image
-            source={{ uri: `data:image/${item.type};base64,${item.data}` }}
-            style={{ width: itemDimension, height: itemDimension }}
-        />
+        <View style={{ flexDirection: 'column', alignItems: 'center' }}>
+            <Image
+                source={{ uri: `data:image/${item.type};base64,${item.data}` }}
+                style={{ width: itemDimension, height: itemDimension }}
+            />
+            <Text style={{ marginLeft: 10 }}>{fileName}</Text>
+        </View>
     </Pressable>
 }
 

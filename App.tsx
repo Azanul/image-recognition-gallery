@@ -36,7 +36,7 @@ function App(): React.JSX.Element {
           options={({ route }) => ({ title: route.params?.dirPath.slice(rootDir.length) })}
           initialParams={{ dirPath: rootDir }}
         />
-        <Stack.Screen name="Image" component={ImageScreen} />
+        <Stack.Screen name="Image" component={ImageScreen} options={({ route }) => ({ title: route.params?.fileName })} />
       </Stack.Navigator>
     </NavigationContainer>
   );
