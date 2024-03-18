@@ -5,7 +5,7 @@ import React from "react";
 import { numberOfColumns } from "../util/constants";
 
 const { width, height } = Dimensions.get('window');
-const imageDimension = Math.min(width / numberOfColumns, height / numberOfColumns);
+const itemDimension = Math.min(width / numberOfColumns, height / numberOfColumns);
 
 export const ItemComponent = ({ item, navigation, crrDirPath }: { item: item, navigation: any, crrDirPath: string }) => {
     return <>
@@ -29,7 +29,7 @@ const ImageComponent = ({ item, navigation }: { item: item, navigation: any }) =
     >
         <Image
             source={{ uri: `data:image/${item.type};base64,${item.data}` }}
-            style={{ width: imageDimension, height: imageDimension }}
+            style={{ width: itemDimension, height: itemDimension }}
         />
     </Pressable>
 }
@@ -41,7 +41,7 @@ const FolderComponent = ({ folderPath, navigation, folderName }: { folderPath: s
             accessibilityLabel="Open folder"
         >
             <View style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Icon name="folder" size={imageDimension} />
+                <Icon name="folder" size={itemDimension} />
                 <Text style={{ marginLeft: 10 }}>{folderName}</Text>
             </View>
         </Pressable>
