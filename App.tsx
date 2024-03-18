@@ -9,6 +9,8 @@ import {
   Image,
   FlatList,
   ListRenderItem,
+  Button,
+  Pressable,
 } from 'react-native';
 import { NativeModules } from 'react-native';
 
@@ -56,24 +58,38 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     requestPermissions();
-    let jsonString: string = Bindings.list('/storage/emulated/0');
-    setData(JSON.parse(jsonString));
-    // Bindings.list('/storage/emulated/0/DCIM');
+    openFolder('/storage/emulated/0')
   }, []);
+
+  const openFolder = (folderPath: string) => {
+    let jsonString: string = Bindings.list(folderPath);
+    setData(JSON.parse(jsonString));
+  }
 
   const renderItem: ListRenderItem<entry> = ({ item }: { item: entry }) => (
     <>
       {
         item.type != "folder" &&
-        <Image
-          source={{ uri: `data:image/${item.type};base64,${item.data}` }}
-          style={{ width: 100, height: 100 }}
-        />
+        <Pressable
+          // onPressOut={() => openFile}
+          accessibilityLabel="Learn more about this purple button"
+        >
+          <Image
+            source={{ uri: `data:image/${item.type};base64,${item.data}` }}
+            style={{ width: 100, height: 100 }}
+          />
+        </Pressable>
       }
       {
         item.type == "folder" &&
-        <Text>Data: {item.data}</Text>
+        <Pressable
+          onPressOut={() => openFolder(item.data)}
+          accessibilityLabel="Learn more about this purple button"
+        >
+          <Text>Data: {item.data}</Text>
+        </Pressable>
       }
+
     </>
   );
 
