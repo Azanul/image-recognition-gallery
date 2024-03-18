@@ -34,7 +34,7 @@ function App(): React.JSX.Element {
           name="Home"
           component={HomeScreen}
           options={({ route }) => ({ title: route.params?.dirPath.slice(rootDir.length) })}
-          initialParams={{ dirPath: rootDir }}
+          initialParams={{ dirPath: rootDir+'/' }}
         />
         <Stack.Screen name="Image" component={ImageScreen} />
       </Stack.Navigator>
