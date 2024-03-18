@@ -42,6 +42,8 @@ export const HomeScreen = ({ navigation } : { navigation : any }) => {
             <FlatList
                 data={list}
                 renderItem={renderItem}
+                numColumns={2}
+                horizontal={false}
             />
         </>
     );
