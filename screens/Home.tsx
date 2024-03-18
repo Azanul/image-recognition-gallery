@@ -35,7 +35,7 @@ export interface HomeProps {
 export const HomeScreen = ({ navigation, route }: { navigation: any, route: RouteProp<RootStackParamList, "Home"> }) => {
     const [list, setList] = useState<item[]>([]);
 
-    const renderItem: ListRenderItem<item> = ({ item }: { item: item }) => <ItemComponent item={item} navigation={navigation} />;
+    const renderItem: ListRenderItem<item> = ({ item }: { item: item }) => <ItemComponent crrDirPath={route.params.dirPath} item={item} navigation={navigation} />;
 
     useEffect(() => {
         requestPermissions();
