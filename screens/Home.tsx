@@ -3,7 +3,7 @@ import { ItemComponent } from "../components/Item";
 import { FlatList, ListRenderItem, PermissionsAndroid } from "react-native";
 import { item, openFolder } from "../util/native";
 import { RouteProp } from "@react-navigation/native";
-import { RootStackParamList } from "../util/constants";
+import { RootStackParamList, numberOfColumns } from "../util/constants";
 
 async function requestPermissions() {
     try {
@@ -47,7 +47,7 @@ export const HomeScreen = ({ navigation, route }: { navigation: any, route: Rout
             <FlatList
                 data={list}
                 renderItem={renderItem}
-                numColumns={2}
+                numColumns={numberOfColumns}
                 horizontal={false}
             />
         </>
