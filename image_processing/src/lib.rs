@@ -15,6 +15,8 @@ pub mod android {
     use image::io::Reader as ImageReader;
     use std::fs::{self};
     use std::io::Cursor;
+    use std::path::PathBuf;
+    use std::str::FromStr;
 
     use self::jni::objects::{JClass, JString};
     use self::jni::sys::jstring;
@@ -37,15 +39,7 @@ pub mod android {
         _: JClass,
         folder_path: JString,
     ) -> jstring {
-        // Convert jstring to Rust String
-        let folder_path = env.get_string(&folder_path);
-        let binding = env.new_string("").expect("Couldn't create java string!");
-        let folder_path = match folder_path {
-            Ok(s) => s.into(),
-            Err(_) => env.get_string(&binding).unwrap(),
-        };
-
-        // Convert JString to Rust String
+        let folder_path = env.get_string(&folder_path).unwrap();
         let folder_path: String = folder_path.to_string_lossy().into_owned();
 
         // Get a list of files & folders in the folder
@@ -90,6 +84,43 @@ pub mod android {
 
         // Construct the JSON array
         let json_result = format!("[{}]", fnfs.join(","));
+
+        let output: JString = env
+            .new_string(&json_result)
+            .expect("Couldn't create java string!");
+        **output
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn Java_com_myimagegallery_BindingsModule_getImage(
+        mut env: JNIEnv,
+        _: JClass,
+        file_path: JString,
+    ) -> jstring {
+        let file_path = env.get_string(&file_path).unwrap();
+        let file_path: String = file_path.to_string_lossy().into_owned();
+
+        // Open the image
+        let img = ImageReader::open(file_path.clone())
+            .unwrap()
+            .decode()
+            .unwrap();
+
+        let image_format = image::ImageFormat::from_path(file_path.clone()).unwrap();
+
+        let mut image_data: Vec<u8> = Vec::new();
+        img.write_to(&mut Cursor::new(&mut image_data), image_format)
+            .unwrap();
+
+        // Construct image response
+        let path = PathBuf::from_str(&file_path).unwrap();
+
+        let json_result = format!(
+            "{{\"type\":\"{}\",\"path\":\"{}\",\"data\":\"{}\"}}",
+            path.extension().unwrap().to_str().unwrap(),
+            path.display(),
+            general_purpose::STANDARD.encode(image_data)
+        );
 
         let output: JString = env
             .new_string(&json_result)

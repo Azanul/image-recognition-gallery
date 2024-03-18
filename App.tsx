@@ -9,6 +9,7 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { HomeScreen } from './screens/Home';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { ImageScreen } from './screens/Image';
 
 const Stack = createNativeStackNavigator();
 
@@ -33,7 +34,7 @@ function App(): React.JSX.Element {
           component={HomeScreen}
           options={{ title: '/' }}
         />
-        {/* <Stack.Screen name="Image" component={ImageScreen} /> */}
+        <Stack.Screen name="Image" component={ImageScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

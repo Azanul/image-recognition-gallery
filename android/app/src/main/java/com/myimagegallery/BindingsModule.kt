@@ -34,6 +34,14 @@ class BindingsModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
         return result
     }
 
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun get(filePath: String): String {
+        RNLog.w(this.reactApplicationContext, "BindingsModule.getImage() called with folderPath: $filePath")
+        val result = getImage(filePath)
+        return result
+    }
+
     private external fun helloWorld(): String
     private external fun listImages(path: String): String
+    private external fun getImage(path: String): String
 }

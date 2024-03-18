@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { item, ItemComponent } from "../components/Item";
+import { ItemComponent } from "../components/Item";
 import { FlatList, ListRenderItem, PermissionsAndroid } from "react-native";
-import { openFolder } from "../util/native";
+import { item, openFolder } from "../util/native";
 import { rootDir } from "../util/constants";
 
 async function requestPermissions() {
