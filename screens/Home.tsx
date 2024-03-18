@@ -27,7 +27,7 @@ async function requestPermissions() {
     }
 }
 
-export const HomeScreen = ({ navigation } : { navigation : any }) => {
+export const HomeScreen = ({ navigation }: { navigation: any }) => {
     const [list, setList] = useState<item[]>([]);
 
     const renderItem: ListRenderItem<item> = ({ item }: { item: item }) => <ItemComponent item={item} setList={setList} navigation={navigation} />;

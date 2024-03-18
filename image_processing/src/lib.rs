@@ -23,17 +23,6 @@ pub mod android {
     use self::jni::JNIEnv;
 
     #[no_mangle]
-    pub unsafe extern "C" fn Java_com_myimagegallery_BindingsModule_helloWorld(
-        env: JNIEnv,
-        _: JClass,
-    ) -> jstring {
-        let output: JString<'_> = env
-            .new_string("Hello from Rust!")
-            .expect("Couldn't create java string!");
-        **output
-    }
-
-    #[no_mangle]
     pub unsafe extern "C" fn Java_com_myimagegallery_BindingsModule_listImages(
         mut env: JNIEnv,
         _: JClass,

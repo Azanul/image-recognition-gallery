@@ -1,7 +1,7 @@
 import { Image } from "react-native";
 import { item, openFile } from "../util/native";
 
-export const ImageScreen = ({ route } : { route: any }) => {
+export const ImageScreen = ({ route }: { route: any }) => {
     const item: item = openFile(route.params.path);
     console.log(item);
     return (

@@ -19,13 +19,6 @@ class BindingsModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
         return "Bindings"
     }
 
-    @ReactMethod
-    fun init(apiKey: String) {
-        RNLog.w(this.reactApplicationContext, "BindingsModule.init() called with apiKey: $apiKey")
-        val result = helloWorld()
-        RNLog.w(this.reactApplicationContext, "Rust says: $result")
-    }
-
     @ReactMethod(isBlockingSynchronousMethod = true)
     fun list(folderPath: String): String {
         RNLog.w(this.reactApplicationContext, "BindingsModule.listImages() called with folderPath: $folderPath")
@@ -41,7 +34,6 @@ class BindingsModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
         return result
     }
 
-    private external fun helloWorld(): String
     private external fun listImages(path: String): String
     private external fun getImage(path: String): String
 }
