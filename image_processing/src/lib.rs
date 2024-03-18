@@ -69,8 +69,9 @@ pub mod android {
                                         .write_to(&mut Cursor::new(&mut image_data), image_format)
                                         .unwrap();
                                     return Some(format!(
-                                        "{{\"type\":\"{}\",\"data\":\"{}\"}}",
+                                        "{{\"type\":\"{}\",\"path\":\"{}\",\"data\":\"{}\"}}",
                                         ext.to_lowercase().as_str(),
+                                        path.display(),
                                         general_purpose::STANDARD.encode(image_data)
                                     ));
                                 }
@@ -78,7 +79,7 @@ pub mod android {
                         }
                     } else {
                         return Some(format!(
-                            "{{\"type\":\"folder\",\"data\":\"{}\"}}",
+                            "{{\"type\":\"folder\",\"path\":\"{}\"}}",
                             path.display()
                         ));
                     }
