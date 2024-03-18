@@ -10,8 +10,9 @@ import { HomeScreen } from './screens/Home';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ImageScreen } from './screens/Image';
+import { RootStackParamList, rootDir } from './util/constants';
 
-const Stack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -32,7 +33,8 @@ function App(): React.JSX.Element {
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{ title: '/' }}
+          options={({ route }) => ({ title: route.params?.dirPath.slice(rootDir.length) })}
+          initialParams={{ dirPath: rootDir }}
         />
         <Stack.Screen name="Image" component={ImageScreen} />
       </Stack.Navigator>

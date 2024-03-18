@@ -1,8 +1,8 @@
 import { Image, Pressable, Text } from "react-native";
-import { item, openFolder } from "../util/native";
+import { item } from "../util/native";
 import { rootDir } from "../util/constants";
 
-export const ItemComponent = ({ item, setList, navigation }: { item: item, setList: React.Dispatch<React.SetStateAction<item[]>>, navigation: any }) => {
+export const ItemComponent = ({ item, navigation }: { item: item, navigation: any }) => {
     return <>
         {
             item.type != "folder" &&
@@ -22,8 +22,7 @@ export const ItemComponent = ({ item, setList, navigation }: { item: item, setLi
             item.type == "folder" &&
             <Pressable
                 onPress={() => {
-                    navigation.setOptions({ title: item.path.slice(rootDir.length) });
-                    setList(openFolder(item.path))
+                    navigation.push('Home', { dirPath: item.path });
                 }
                 }
                 accessibilityLabel="Open folder"
