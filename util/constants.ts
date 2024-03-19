@@ -4,7 +4,7 @@ export const numberOfColumns = 2;
 
 export const rootDir: string = '/storage/emulated/0';
 
-export type RootStackParamList = {
+export type GeneralStackParamList = {
     Home: HomeProps;
     Image: { fileName: string, path: string };
   };
