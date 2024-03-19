@@ -13,6 +13,9 @@ pub mod android {
     use base64::engine::general_purpose;
     use base64::Engine;
     use image::io::Reader as ImageReader;
+    use serde::{Deserialize, Serialize};
+    use serde_json::json;
+
     use std::fs::{self};
     use std::io::Cursor;
     use std::path::PathBuf;
@@ -21,6 +24,53 @@ pub mod android {
     use self::jni::objects::{JClass, JString};
     use self::jni::sys::jstring;
     use self::jni::JNIEnv;
+
+    const SUPPORTED_FORMATS: [&str; 3] = ["png", "jpg", "jpeg"];
+
+    // An item can be an image or a folder
+    #[derive(Serialize, Deserialize)]
+    pub struct ItemInfo {
+        pub r#type: String,
+        pub path: String,
+        pub data: String,
+    }
+
+    fn list_images(folder_path: &str) -> Result<Vec<ItemInfo>, std::io::Error> {
+        let fnfs = fs::read_dir(folder_path)?
+            .filter_map(|entry| {
+                let entry = entry.ok()?;
+                let path = entry.path();
+                if path.is_file() {
+                    if let Some(extension) = path.extension() {
+                        if let Some(ext) = extension.to_str() {
+                            if SUPPORTED_FORMATS.contains(&&*ext.to_lowercase()) {
+                                let image_format = image::ImageFormat::from_extension(ext).unwrap();
+                                let img = ImageReader::open(&path).unwrap().decode().unwrap();
+                                let mut image_data: Vec<u8> = Vec::new();
+                                img.thumbnail(100, 100)
+                                    .write_to(&mut Cursor::new(&mut image_data), image_format)
+                                    .unwrap();
+                                return Some(ItemInfo {
+                                    r#type: ext.to_lowercase().to_owned(),
+                                    path: path.display().to_string(),
+                                    data: general_purpose::STANDARD.encode(image_data),
+                                });
+                            }
+                        }
+                    }
+                } else {
+                    return Some(ItemInfo {
+                        r#type: "folder".to_owned(),
+                        path: path.display().to_string(),
+                        data: String::new(),
+                    });
+                }
+                None
+            })
+            .collect();
+
+        Ok(fnfs)
+    }
 
     #[no_mangle]
     pub unsafe extern "C" fn Java_com_myimagegallery_BindingsModule_listImages(
@@ -31,48 +81,17 @@ pub mod android {
         let folder_path = env.get_string(&folder_path).unwrap();
         let folder_path: String = folder_path.to_string_lossy().into_owned();
 
-        // Get a list of files & folders in the folder
-        let fnfs = fs::read_dir(folder_path)
-            .unwrap()
-            .filter_map(|entry| {
-                entry.ok().and_then(|e| {
-                    let path = e.path();
-                    if path.is_file() {
-                        if let Some(extension) = path.extension() {
-                            if let Some(ext) = extension.to_str() {
-                                if ext.eq_ignore_ascii_case("png")
-                                    || ext.eq_ignore_ascii_case("jpg")
-                                    || ext.eq_ignore_ascii_case("jpeg")
-                                {
-                                    let image_format =
-                                        image::ImageFormat::from_extension(ext).unwrap();
-                                    let img = ImageReader::open(&path).unwrap().decode().unwrap();
-                                    let mut image_data: Vec<u8> = Vec::new();
-                                    img.thumbnail(100, 100)
-                                        .write_to(&mut Cursor::new(&mut image_data), image_format)
-                                        .unwrap();
-                                    return Some(format!(
-                                        "{{\"type\":\"{}\",\"path\":\"{}\",\"data\":\"{}\"}}",
-                                        ext.to_lowercase().as_str(),
-                                        path.display(),
-                                        general_purpose::STANDARD.encode(image_data)
-                                    ));
-                                }
-                            }
-                        }
-                    } else {
-                        return Some(format!(
-                            "{{\"type\":\"folder\",\"path\":\"{}\"}}",
-                            path.display()
-                        ));
-                    }
-                    None
-                })
-            })
-            .collect::<Vec<_>>();
+        let image_infos = match list_images(&folder_path) {
+            Ok(infos) => infos,
+            Err(err) => {
+                let error_msg = format!("Error listing images: {}", err);
+                return **env
+                    .new_string(&error_msg)
+                    .expect("Couldn't create java string!");
+            }
+        };
 
-        // Construct the JSON array
-        let json_result = format!("[{}]", fnfs.join(","));
+        let json_result = json!(image_infos).to_string();
 
         let output: JString = env
             .new_string(&json_result)
