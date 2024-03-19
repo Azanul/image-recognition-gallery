@@ -99,6 +99,26 @@ pub mod android {
         **output
     }
 
+    fn get_image(file_path: &str) -> Result<ItemInfo, std::io::Error> {
+        let img = ImageReader::open(file_path)
+            .unwrap()
+            .decode()
+            .unwrap();
+    
+        let image_format = image::ImageFormat::from_path(file_path).unwrap();
+    
+        let mut image_data: Vec<u8> = Vec::new();
+        img.write_to(&mut Cursor::new(&mut image_data), image_format)
+            .unwrap();
+    
+        let path = PathBuf::from_str(file_path).unwrap();
+    
+        Ok(ItemInfo {
+            r#type: path.extension().unwrap().to_str().unwrap().to_string(),
+            path: file_path.to_owned(),
+            data: general_purpose::STANDARD.encode(image_data),
+        })}    
+
     #[no_mangle]
     pub unsafe extern "C" fn Java_com_myimagegallery_BindingsModule_getImage(
         mut env: JNIEnv,
@@ -108,27 +128,17 @@ pub mod android {
         let file_path = env.get_string(&file_path).unwrap();
         let file_path: String = file_path.to_string_lossy().into_owned();
 
-        // Open the image
-        let img = ImageReader::open(file_path.clone())
-            .unwrap()
-            .decode()
-            .unwrap();
+        let image_info = match get_image(&file_path) {
+            Ok(info) => info,
+            Err(err) => {
+                let error_msg = format!("Error getting image: {}", err);
+                return **env
+                    .new_string(&error_msg)
+                    .expect("Couldn't create java string!");
+            }
+        };
 
-        let image_format = image::ImageFormat::from_path(file_path.clone()).unwrap();
-
-        let mut image_data: Vec<u8> = Vec::new();
-        img.write_to(&mut Cursor::new(&mut image_data), image_format)
-            .unwrap();
-
-        // Construct image response
-        let path = PathBuf::from_str(&file_path).unwrap();
-
-        let json_result = format!(
-            "{{\"type\":\"{}\",\"path\":\"{}\",\"data\":\"{}\"}}",
-            path.extension().unwrap().to_str().unwrap(),
-            path.display(),
-            general_purpose::STANDARD.encode(image_data)
-        );
+        let json_result = json!(image_info).to_string();
 
         let output: JString = env
             .new_string(&json_result)
