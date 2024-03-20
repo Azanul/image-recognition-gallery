@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { ItemComponent } from "../components/Item";
 import { FlatList, ListRenderItem, PermissionsAndroid } from "react-native";
-import { item, openFolder } from "../util/native";
-import { RouteProp } from "@react-navigation/native";
-import { RootStackParamList, numberOfColumns } from "../util/constants";
+import { item } from "../util/native";
+import { NavigationProp, RouteProp } from "@react-navigation/native";
+import { GeneralStackParamList, PeopleStackParamList, numberOfColumns } from "../util/constants";
 
 async function requestPermissions() {
     try {
@@ -28,18 +28,14 @@ async function requestPermissions() {
     }
 }
 
-export interface HomeProps {
-    dirPath: string 
-}
-
-export const HomeScreen = ({ navigation, route }: { navigation: any, route: RouteProp<RootStackParamList, "Home"> }) => {
+export const HomeScreen = ({ navigation, route }: { navigation: any, route: RouteProp<GeneralStackParamList, "General"> | RouteProp<PeopleStackParamList, "People"> }) => {
     const [list, setList] = useState<item[]>([]);
 
     const renderItem: ListRenderItem<item> = ({ item }: { item: item }) => <ItemComponent crrDirPath={route.params.dirPath} item={item} navigation={navigation} />;
 
     useEffect(() => {
         requestPermissions();
-        setList(openFolder(route.params.dirPath));
+        setList(route.params.selector(route.params.dirPath));
     }, []);
 
     return (

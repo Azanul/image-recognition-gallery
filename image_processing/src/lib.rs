@@ -4,8 +4,8 @@ use image::io::Reader as ImageReader;
 use serde::{Deserialize, Serialize};
 
 use std::fs::{self};
-use std::io::Cursor;
-use std::path::PathBuf;
+use std::io::{BufRead, BufReader, Cursor};
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 
 const SUPPORTED_FORMATS: [&str; 3] = ["png", "jpg", "jpeg"];
@@ -73,12 +73,77 @@ fn get_image(file_path: &str) -> Result<ItemInfo, std::io::Error> {
     })
 }
 
+fn list_tags(folder_path: &str) -> Result<Vec<ItemInfo>, std::io::Error> {
+    let tags = fs::read_dir(folder_path)?
+        .filter_map(|entry| {
+            let entry = entry.ok()?;
+            let path = entry.path();
+            if path.is_file() {
+                if let Some(extension) = path.extension() {
+                    if let Some(ext) = extension.to_str() {
+                        if SUPPORTED_FORMATS.contains(&&*ext.to_lowercase()) {
+                            let image_format = image::ImageFormat::from_extension(ext).unwrap();
+                            let img = ImageReader::open(&path).unwrap().decode().unwrap();
+                            let mut image_data: Vec<u8> = Vec::new();
+                            img.thumbnail(100, 100)
+                                .write_to(&mut Cursor::new(&mut image_data), image_format)
+                                .unwrap();
+                            return Some(ItemInfo {
+                                r#type: "folder".to_owned(),
+                                path: path.file_name().unwrap().to_string_lossy().into_owned(),
+                                data: String::new(),
+                            });
+                        }
+                    }
+                }
+            }
+            None
+        })
+        .collect();
+
+    Ok(tags)
+}
+
+fn list_images_with_tag(file_path: &str) -> Result<Vec<ItemInfo>, std::io::Error> {
+    let file = fs::File::open(file_path)?;
+    let reader = BufReader::new(file);
+
+    let imgs = reader
+        .lines()
+        .filter_map(|line| {
+            if let Ok(path) = line {
+                let path = Path::new(&path);
+                if path.is_file() {
+                    if let Some(extension) = path.extension() {
+                        if let Some(ext) = extension.to_str() {
+                            let image_format = image::ImageFormat::from_extension(ext).unwrap();
+                            let img = ImageReader::open(&path).unwrap().decode().unwrap();
+                            let mut image_data: Vec<u8> = Vec::new();
+                            img.thumbnail(100, 100)
+                                .write_to(&mut Cursor::new(&mut image_data), image_format)
+                                .unwrap();
+                            return Some(ItemInfo {
+                                r#type: ext.to_lowercase().to_owned(),
+                                path: path.display().to_string(),
+                                data: general_purpose::STANDARD.encode(image_data),
+                            });
+                        }
+                    }
+                }
+            }
+            None
+        })
+        .collect();
+
+    Ok(imgs)
+}
+
 pub mod android {
     extern crate jni;
 
     use serde_json::json;
 
-    use crate::{get_image, list_images};
+    use crate::{get_image, list_images, list_images_with_tag, list_tags};
 
     use self::jni::objects::{JClass, JString};
     use self::jni::sys::jstring;
@@ -131,6 +196,60 @@ pub mod android {
         };
 
         let json_result = json!(image_info).to_string();
+
+        let output: JString = env
+            .new_string(&json_result)
+            .expect("Couldn't create java string!");
+        **output
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn Java_com_myimagegallery_BindingsModule_listTags(
+        mut env: JNIEnv,
+        _: JClass,
+        tag: JString,
+    ) -> jstring {
+        let tag = env.get_string(&tag).unwrap();
+        let tag: String = tag.to_string_lossy().into_owned();
+
+        let image_infos = match list_tags(&tag) {
+            Ok(infos) => infos,
+            Err(err) => {
+                let error_msg = format!("Error listing tags: {}", err);
+                return **env
+                    .new_string(&error_msg)
+                    .expect("Couldn't create java string!");
+            }
+        };
+
+        let json_result = json!(image_infos).to_string();
+
+        let output: JString = env
+            .new_string(&json_result)
+            .expect("Couldn't create java string!");
+        **output
+    }
+
+    #[no_mangle]
+    pub unsafe extern "C" fn Java_com_myimagegallery_BindingsModule_listTaggedImages(
+        mut env: JNIEnv,
+        _: JClass,
+        tag: JString,
+    ) -> jstring {
+        let tag = env.get_string(&tag).unwrap();
+        let tag: String = tag.to_string_lossy().into_owned();
+
+        let image_infos = match list_images_with_tag(&tag) {
+            Ok(infos) => infos,
+            Err(err) => {
+                let error_msg = format!("Error listing images with given tag: {}", err);
+                return **env
+                    .new_string(&error_msg)
+                    .expect("Couldn't create java string!");
+            }
+        };
+
+        let json_result = json!(image_infos).to_string();
 
         let output: JString = env
             .new_string(&json_result)

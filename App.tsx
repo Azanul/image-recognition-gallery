@@ -6,45 +6,46 @@ import {
   StatusBar,
   useColorScheme,
 } from 'react-native';
-
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { HomeScreen } from './screens/Home';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { ImageScreen } from './screens/Image';
-import { GeneralStackParamList, rootDir } from './util/constants';
+import { GeneralStackParamList, PeopleStackParamList, rootDir, rootTag } from './util/constants';
+import { openFolder, openTag } from './util/native';
 
 const Drawer = createDrawerNavigator();
 const GeneralStack = createNativeStackNavigator<GeneralStackParamList>();
-// const TaggedStack = createNativeStackNavigator<GeneralStackParamList>();
+const PeopleStack = createNativeStackNavigator<PeopleStackParamList>();
 
 function GeneralView() {
   return (
     <GeneralStack.Navigator>
       <GeneralStack.Screen
-        name="Home"
+        name="General"
         component={HomeScreen}
         options={({ route }) => ({ title: route.params?.dirPath.slice(rootDir.length) })}
-        initialParams={{ dirPath: rootDir }}
+        initialParams={{ dirPath: rootDir, selector: openFolder }}
       />
       <GeneralStack.Screen name="Image" component={ImageScreen} options={({ route }) => ({ title: route.params?.fileName })} />
     </GeneralStack.Navigator>
   );
 }
 
-// function TaggedView() {
-//   return (
-//     <TaggedStack.Navigator>
-//       <TaggedStack.Screen
-//         name="B"
-//         component={B}
-//         options={{ tabBarLabel: 'Settings!' }}
-//       />
-//       <TaggedStack.Screen name="Image" component={ImageScreen} options={({ route }) => ({ title: route.params?.fileName })} />
-//     </TaggedStack.Navigator>
-//   );
-// }
+function PeopleView() {
+  return (
+    <PeopleStack.Navigator>
+      <PeopleStack.Screen
+        name="People"
+        component={HomeScreen}
+        options={({ route }) => ({ title: route.params?.dirPath })}
+        initialParams={{ dirPath: rootTag, selector: openTag }}
+      />
+      <PeopleStack.Screen name="Image" component={ImageScreen} options={({ route }) => ({ title: route.params?.fileName })} />
+    </PeopleStack.Navigator>
+  );
+}
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -62,7 +63,7 @@ function App(): React.JSX.Element {
       </SafeAreaView>
       <Drawer.Navigator initialRouteName="Home">
         <Drawer.Screen name="Home" component={GeneralView} />
-        {/* <Drawer.Screen name="Notifications" component={TaggedView} /> */}
+        <Drawer.Screen name="People" component={PeopleView} />
       </Drawer.Navigator>
     </NavigationContainer>
   );

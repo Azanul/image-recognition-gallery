@@ -20,9 +20,29 @@ class BindingsModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
     }
 
     @ReactMethod(isBlockingSynchronousMethod = true)
-    fun list(folderPath: String): String {
-        RNLog.w(this.reactApplicationContext, "BindingsModule.listImages() called with folderPath: $folderPath")
-        val result = listImages(folderPath)
+    fun create(tag: String): String {
+        RNLog.w(this.reactApplicationContext, "BindingsModule.createTag() called with tag: $tag")
+        val result = createTag(tag, this.reactApplicationContext.filesDir.getPath())
+        return result
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun tag(filePath: String, tag: String): String {
+        RNLog.w(this.reactApplicationContext, "BindingsModule.addImageToTag() called with filePath $filePath & tag: $tag")
+        val result = addImageToTag(filePath, tag)
+        return result
+    }
+
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    fun list(pathOrTag: String): String {
+        RNLog.w(this.reactApplicationContext, "BindingsModule.listImages() called with pathOrTag: $pathOrTag")
+        val result = if (folderPath.isEmpty()) {
+            listTags(this.reactApplicationContext.filesDir.getPath())
+        } else if (!pathOrTag.startsWith("/storage/emulated/0")) {
+            listTaggedImages(this.reactApplicationContext.filesDir.getPath()+"/"+pathOrTag)
+        } else {
+            listImages(pathOrTag)
+        }
         RNLog.w(this.reactApplicationContext, "Rust says: $result")
         return result
     }
@@ -36,4 +56,6 @@ class BindingsModule(reactContext: ReactApplicationContext) : ReactContextBaseJa
 
     private external fun listImages(path: String): String
     private external fun getImage(path: String): String
+    private external fun listTags(path: String): String
+    private external fun listTaggedImages(path: String): String
 }

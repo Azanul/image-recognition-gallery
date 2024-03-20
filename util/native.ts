@@ -17,3 +17,8 @@ export const openFile: any = (filePath: string) => {
     let jsonString: string = Bindings.get(filePath);
     return JSON.parse(jsonString);
 }
+
+export const openTag: any = (tagName: string) => {
+    let jsonString: string = Bindings.list(tagName);
+    return JSON.parse(jsonString);
+}
